@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🀄 중국어 어순 배열 게임 – 병원 회화</title>
+<style>
+/* ───────── 기본 리셋 & 변수 ───────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --pk:#e91e63;--pk-l:#f48fb1;--pk-ll:#fce4ec;--pk-m:#f8bbd0;
+  --bl:#1e88e5;--bl-l:#90caf9;--bl-ll:#e3f2fd;--bl-m:#bbdefb;
+  --gn:#388e3c;--gn-l:#81c784;--gn-ll:#e8f5e9;
+  --pp:#7b1fa2;--pp-ll:#f3e5f5;
+  --gy:#f5f5f5;--gy-d:#bdbdbd;
+  --sh:0 8px 32px rgba(233,30,99,.09),0 2px 8px rgba(0,0,0,.06);
+  --rd:20px;
+}
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#fce4ec 0%,#f3e5f5 30%,#e8f5e9 65%,#e3f2fd 100%);
+  font-family:'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  display:flex;flex-direction:column;align-items:center;
+  padding:22px 14px 90px;
+}
+
+/* ───────── 헤더 ───────── */
+.hdr{text-align:center;margin-bottom:20px;}
+.hdr-icon{font-size:2.2rem;margin-bottom:4px;display:block;}
+.hdr h1{
+  font-size:1.5rem;font-weight:900;color:var(--pk);
+  letter-spacing:-.5px;
+  text-shadow:0 2px 12px rgba(233,30,99,.2);
+}
+.hdr p{font-size:.79rem;color:#bbb;margin-top:5px;}
+
+/* ───────── 진행 표시 (점) ───────── */
+.prog-wrap{width:100%;max-width:580px;margin-bottom:14px;}
+.prog-top{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:.74rem;color:#bbb;font-weight:700;margin-bottom:8px;
+}
+.prog-pct{color:var(--pk);font-weight:900;}
+.prog-dots{
+  display:flex;gap:5px;flex-wrap:wrap;
+}
+.pdot{
+  height:9px;border-radius:50px;
+  background:#f0d0db;
+  transition:background .4s,width .3s;
+  flex-shrink:0;
+}
+.pdot.done{background:linear-gradient(90deg,var(--pk-l),var(--pk));}
+.pdot.cur{
+  background:linear-gradient(90deg,var(--pk-l),var(--pk));
+  opacity:.55;
+}
+
+/* ───────── 스코어 ───────── */
+.score-row{
+  display:flex;gap:9px;
+  width:100%;max-width:580px;
+  margin-bottom:16px;
+}
+.sc-box{
+  flex:1;background:#fff;border-radius:15px;
+  padding:10px 5px;text-align:center;
+  box-shadow:0 2px 12px rgba(0,0,0,.07);
+}
+.sc-num{font-size:1.35rem;font-weight:900;color:var(--pk);}
+.sc-lbl{font-size:.66rem;color:#bbb;font-weight:700;margin-top:2px;}
+
+/* ───────── 메인 게임 카드 ───────── */
+.card{
+  width:100%;max-width:580px;
+  background:#fff;border-radius:var(--rd);
+  padding:24px 20px 22px;
+  box-shadow:var(--sh);
+}
+
+/* 문장 번호 뱃지 */
+.s-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(135deg,var(--pk-l),var(--pk));
+  color:#fff;font-size:.69rem;font-weight:800;
+  padding:4px 13px;border-radius:50px;
+  margin-bottom:13px;letter-spacing:.6px;
+}
+
+/* 한국어 뜻 박스 */
+.meaning-box{
+  background:linear-gradient(135deg,var(--pk-ll),var(--pk-m));
+  border-radius:14px;padding:14px 17px;
+  margin-bottom:17px;border-left:4px solid var(--pk);
+}
+.m-lbl{
+  font-size:.68rem;color:var(--pk);
+  font-weight:800;letter-spacing:.6px;margin-bottom:4px;
+}
+.m-txt{
+  font-size:1.1rem;font-weight:800;
+  color:#4a148c;line-height:1.6;
+}
+
+/* 힌트 */
+.hint-row{
+  display:flex;align-items:center;gap:7px;
+  margin-bottom:10px;cursor:pointer;user-select:none;
+}
+.hint-row input{accent-color:var(--pk);width:15px;height:15px;}
+.hint-row span{font-size:.78rem;color:#bbb;font-weight:600;}
+.hint-box{
+  background:var(--pp-ll);border-radius:11px;
+  padding:10px 14px;margin-bottom:12px;
+  font-size:.85rem;color:var(--pp);
+  font-style:italic;letter-spacing:.5px;
+  line-height:1.7;text-align:center;
+  word-break:keep-all;display:none;
+}
+
+/* 섹션 레이블 */
+.sec-lbl{
+  font-size:.67rem;color:#ccc;font-weight:800;
+  letter-spacing:1.1px;text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+/* 단어 카드 풀 */
+.word-pool{
+  display:flex;flex-wrap:wrap;gap:8px;
+  min-height:54px;background:#fafafa;
+  border-radius:13px;padding:10px;
+  margin-bottom:14px;
+  border:2px dashed var(--pk-m);
+  align-content:flex-start;
+}
+.word-pool:empty::after{
+  content:"✅ 모든 카드를 배치했어요!";
+  color:#ddd;font-size:.79rem;margin:auto;
+}
+
+/* 정답 입력 풀 */
+.ans-pool{
+  display:flex;flex-wrap:wrap;gap:8px;
+  min-height:60px;background:#fff5f8;
+  border-radius:13px;padding:10px;
+  margin-bottom:16px;
+  border:2.5px solid var(--pk-l);
+  align-content:flex-start;
+  transition:border-color .3s,background .3s;
+}
+.ans-pool:empty::after{
+  content:"👇 카드를 클릭해 여기에 배치하세요";
+  color:#f4bbd0;font-size:.79rem;margin:auto;
+}
+.ans-pool.c-ok{
+  border-color:#4caf50;background:#f1f8e9;
+  animation:cPulse .5s ease;
+}
+.ans-pool.c-no{
+  border-color:#ef5350;background:#fff5f5;
+  animation:wShake .42s ease;
+}
+@keyframes cPulse{
+  0%{transform:scale(1)}50%{transform:scale(1.018)}100%{transform:scale(1)}
+}
+@keyframes wShake{
+  0%{transform:translateX(0)}20%{transform:translateX(-9px)}
+  40%{transform:translateX(9px)}60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}100%{transform:translateX(0)}
+}
+
+/* ───────── 단어 카드 버튼 ───────── */
+.wbtn{
+  background:linear-gradient(135deg,var(--bl-ll),var(--bl-m));
+  color:#1565c0;
+  border:2px solid var(--bl-l);
+  border-radius:12px;
+  padding:9px 15px;
+  font-size:.95rem;font-weight:700;
+  cursor:pointer;letter-spacing:.2px;
+  transition:transform .14s,box-shadow .14s;
+  user-select:none;font-family:inherit;line-height:1.3;
+}
+.wbtn:hover{
+  transform:translateY(-3px) scale(1.07);
+  box-shadow:0 8px 20px rgba(21,101,192,.24);
+}
+.wbtn:active{transform:scale(.95);}
+
+/* 정답창 카드 (핑크) */
+.wbtn.ans-c{
+  background:linear-gradient(135deg,var(--pk-ll),var(--pk-m));
+  color:#880e4f;border-color:var(--pk-l);
+}
+.wbtn.ans-c:hover{
+  box-shadow:0 8px 20px rgba(136,14,79,.22);
+}
+
+/* ───────── 피드백 ───────── */
+.feedback{
+  text-align:center;font-size:1.02rem;font-weight:800;
+  min-height:28px;margin-bottom:13px;letter-spacing:.2px;
+}
+.feedback.ok{color:#2e7d32;}
+.feedback.no{color:#c62828;}
+
+/* ───────── 버튼 ───────── */
+.btn-row{display:flex;gap:9px;}
+.btn-check{
+  flex:1;
+  background:linear-gradient(135deg,var(--pk),#c2185b);
+  color:#fff;border:none;border-radius:14px;
+  padding:14px 0;font-size:.97rem;font-weight:800;
+  cursor:pointer;letter-spacing:.3px;
+  box-shadow:0 4px 16px rgba(233,30,99,.32);
+  transition:opacity .2s,transform .14s;font-family:inherit;
+}
+.btn-check:hover{opacity:.91;transform:translateY(-2px);}
+.btn-check:active{transform:scale(.97);}
+
+.btn-reset{
+  background:var(--gy);color:var(--gy-d);
+  border:2px solid #ebebeb;border-radius:14px;
+  padding:14px 15px;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:background .2s;font-family:inherit;
+}
+.btn-reset:hover{background:#eee;}
+
+.btn-next{
+  width:100%;
+  background:linear-gradient(135deg,var(--gn-l),var(--gn));
+  color:#fff;border:none;border-radius:14px;
+  padding:14px 0;font-size:.97rem;font-weight:800;
+  cursor:pointer;margin-top:10px;
+  display:none;
+  box-shadow:0 4px 16px rgba(56,142,60,.3);
+  transition:opacity .2s,transform .14s;
+  font-family:inherit;letter-spacing:.3px;
+}
+.btn-next.on{display:block;}
+.btn-next:hover{opacity:.9;transform:translateY(-2px);}
+
+/* ───────── 완료 화면 ───────── */
+.done-card{
+  width:100%;max-width:580px;
+  background:#fff;border-radius:var(--rd);
+  padding:40px 24px 34px;
+  box-shadow:var(--sh);
+  display:none;
+  flex-direction:column;align-items:center;
+  text-align:center;gap:14px;
+}
+.done-card.on{display:flex;}
+.done-emoji{font-size:4.2rem;animation:bob .8s infinite alternate;}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-14px)}}
+.done-stars{font-size:1.8rem;letter-spacing:5px;}
+.done-title{font-size:1.5rem;font-weight:900;color:var(--pk);}
+.done-stats{display:flex;gap:10px;width:100%;}
+.ds-box{
+  flex:1;
+  background:linear-gradient(135deg,var(--bl-ll),var(--bl-m));
+  border-radius:13px;padding:13px 8px;text-align:center;
+  border:1.5px solid var(--bl-l);
+}
+.ds-num{font-size:1.4rem;font-weight:900;color:var(--bl);}
+.ds-lbl{font-size:.66rem;color:#90a4ae;font-weight:700;margin-top:2px;}
+.done-sub{
+  font-size:.9rem;color:#888;line-height:1.9;
+  background:var(--pk-ll);
+  border-radius:13px;padding:15px 18px;width:100%;
+}
+.done-sub b{color:var(--pk);}
+.done-highlight{
+  display:inline-block;font-size:1rem;
+  font-weight:900;color:var(--pk);
+  background:var(--pk-m);border-radius:8px;
+  padding:4px 13px;margin-top:8px;
+}
+.btn-restart{
+  width:100%;
+  background:linear-gradient(135deg,var(--pk),#c2185b);
+  color:#fff;border:none;border-radius:14px;
+  padding:14px 0;font-size:.97rem;font-weight:800;
+  cursor:pointer;
+  box-shadow:0 4px 16px rgba(233,30,99,.3);
+  transition:opacity .2s,transform .14s;font-family:inherit;
+}
+.btn-restart:hover{opacity:.9;transform:translateY(-2px);}
+
+/* ───────── 반응형 ───────── */
+@media(max-width:400px){
+  .hdr h1{font-size:1.25rem;}
+  .m-txt{font-size:1rem;}
+  .wbtn{font-size:.86rem;padding:8px 12px;}
+  .sc-num{font-size:1.18rem;}
+  .card{padding:20px 15px 18px;}
+  .pdot{height:8px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="hdr">
+  <span class="hdr-icon">🀄</span>
+  <h1>중국어 어순 배열 게임 – 병원 회화</h1>
+  <p>카드를 올바른 어순으로 배열해 보세요!</p>
+</div>
+
+<!-- 진행 바 -->
+<div class="prog-wrap">
+  <div class="prog-top">
+    <span id="progLabel">문장 1 / 7</span>
+    <span class="prog-pct" id="progPct">0%</span>
+  </div>
+  <div class="prog-dots" id="progDots"></div>
+</div>
+
+<!-- 스코어 -->
+<div class="score-row">
+  <div class="sc-box">
+    <div class="sc-num" id="scOK">0</div>
+    <div class="sc-lbl">✅ 정답</div>
+  </div>
+  <div class="sc-box">
+    <div class="sc-num" id="scFail">0</div>
+    <div class="sc-lbl">❌ 오답</div>
+  </div>
+  <div class="sc-box">
+    <div class="sc-num" id="scStreak">0</div>
+    <div class="sc-lbl">🔥 연속</div>
+  </div>
+</div>
+
+<!-- 게임 카드 -->
+<div class="card" id="gameCard">
+
+  <div class="s-badge" id="sBadge">📝 문장 1</div>
+
+  <div class="meaning-box">
+    <div class="m-lbl">💬 한국어 뜻</div>
+    <div class="m-txt" id="mTxt"></div>
+  </div>
+
+  <label class="hint-row">
+    <input type="checkbox" id="hintChk" onchange="toggleHint()"/>
+    <span>🔍 전체 병음 힌트 보기</span>
+  </label>
+  <div class="hint-box" id="hintBox"></div>
+
+  <div class="sec-lbl">📦 단어 카드</div>
+  <div class="word-pool" id="wordPool"></div>
+
+  <div class="sec-lbl">✏️ 내 정답</div>
+  <div class="ans-pool" id="ansPool"></div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="btn-row">
+    <button class="btn-check" onclick="checkAns()">정답 확인 ✓</button>
+    <button class="btn-reset"  onclick="resetCards()">↩ 초기화</button>
+  </div>
+  <button class="btn-next" id="btnNext" onclick="nextSentence()">
+    다음 문장 →
+  </button>
+
+</div>
+
+<!-- 완료 화면 -->
+<div class="done-card" id="doneCard">
+  <div class="done-emoji" id="doneEmoji">🎉</div>
+  <div class="done-stars" id="doneStars"></div>
+  <div class="done-title">모두 완료! 수고했어요!</div>
+  <div class="done-stats" id="doneStats"></div>
+  <div class="done-sub"  id="doneSub"></div>
+  <button class="btn-restart" onclick="restart()">
+    🔄 처음부터 다시 도전하기
+  </button>
+</div>
+
+<script>
+/* ① 문장 데이터 (병음 카드 + 정답 인덱스 + 힌트) */
+const SENTENCES = [
+  {
+    meaning : '어디가 불편하신가요?',
+    words   : ['Nǐ','nǎr','bù','shūfu?'],
+    answer  : [0,1,2,3],
+    hint    : 'Nǐ nǎr bù shūfu?'
+  },
+  {
+    meaning : '저는 머리가 아프고, 목도 아파요.',
+    words   : ['Wǒ','tóuténg,','sǎngzi','yě','téng.'],
+    answer  : [0,1,2,3,4],
+    hint    : 'Wǒ tóuténg, sǎngzi yě téng.'
+  },
+  {
+    meaning : '제가 좀 볼게요. 감기에 걸렸네요.',
+    words   : ['Wǒ','kànkan.','Nǐ','gǎnmào','le.'],
+    answer  : [0,1,2,3,4],
+    hint    : 'Wǒ kànkan. Nǐ gǎnmào le.'
+  },
+  {
+    meaning : '주사를 맞아야 하나요?',
+    words   : ['Yào','dǎzhēn','ma?'],
+    answer  : [0,1,2],
+    hint    : 'Yào dǎzhēn ma?'
+  },
+  {
+    meaning : '심하지 않아서 주사는 안 맞아도 됩니다.',
+    words   : ['Bù','yánzhòng,','bú','yòng','dǎzhēn.'],
+    answer  : [0,1,2,3,4],
+    hint    : 'Bù yánzhòng, bú yòng dǎzhēn.'
+  },
+  {
+    meaning : '약을 조금 드시면 됩니다.',
+    words   : ['Chī','diǎnr','yào','jiù','xíng.'],
+    answer  : [0,1,2,3,4],
+    hint    : 'Chī diǎnr yào jiù xíng.'
+  },
+  {
+    meaning : '네, 의사 선생님 감사합니다.',
+    words   : ['Hǎo,','xièxie','dàifu.'],
+    answer  : [0,1,2],
+    hint    : 'Hǎo, xièxie dàifu.'
+  }
+];
+
+/* ② 게임 상태 */
+let curIdx=0,scoreOK=0,scoreFail=0,streak=0,maxStreak=0;
+let wPool=[],aPool=[];
+
+/* ③ 초기화 */
+window.onload=()=>{
+  buildDots();
+  loadSentence(0);
+};
+
+/* 진행 점 생성 */
+function buildDots(){
+  const wrap=document.getElementById('progDots');
+  wrap.innerHTML='';
+  const total=SENTENCES.length;
+  SENTENCES.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='pdot';
+    d.id=`dot-${i}`;
+    d.style.width=`calc((100% - ${(total-1)*5}px) / ${total})`;
+    wrap.appendChild(d);
+  });
+}
+
+/* 문장 로드 */
+function loadSentence(idx){
+  const s=SENTENCES[idx];
+
+  document.getElementById('sBadge').textContent=`📝 문장 ${idx+1}`;
+  document.getElementById('mTxt').textContent  =s.meaning;
+
+  document.getElementById('hintChk').checked=false;
+  const hb=document.getElementById('hintBox');
+  hb.textContent  =s.hint;
+  hb.style.display='none';
+
+  const arr=s.words.map((text,i)=>({text,origIdx:i}));
+  if(arr.length>1) shuffle(arr);
+  wPool=arr;
+  aPool=[];
+
+  setFb('','');
+  rmFlash();
+  document.getElementById('btnNext').classList.remove('on');
+
+  updateProg(idx);
+  render();
+}
+
+/* 셔플 */
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+}
+
+/* ④ 렌더링 */
+function render(){
+  const wp=document.getElementById('wordPool');
+  const ap=document.getElementById('ansPool');
+  wp.innerHTML='';ap.innerHTML='';
+
+  wPool.forEach((_,i)=>
+    wp.appendChild(mkBtn(wPool[i].text,'wbtn',()=>toAns(i)))
+  );
+  aPool.forEach((_,i)=>
+    ap.appendChild(mkBtn(aPool[i].text,'wbtn ans-c',()=>toPool(i)))
+  );
+}
+function mkBtn(txt,cls,fn){
+  const b=document.createElement('button');
+  b.className=cls;
+  b.textContent=txt;
+  b.addEventListener('click',fn);
+  return b;
+}
+
+/* ⑤ 카드 이동 */
+function toAns(i){
+  aPool.push(wPool.splice(i,1)[0]);
+  setFb('','');rmFlash();render();
+}
+function toPool(i){
+  wPool.push(aPool.splice(i,1)[0]);
+  setFb('','');rmFlash();render();
+}
+
+/* ⑥ 정답 확인 */
+function checkAns(){
+  const s=SENTENCES[curIdx];
+  const ap=document.getElementById('ansPool');
+
+  if(aPool.length!==s.words.length){
+    setFb('⚠️ 모든 카드를 배치해 주세요!','no');
+    return;
+  }
+
+  const ok=aPool.every((w,pos)=>w.origIdx===s.answer[pos]);
+
+  if(ok){
+    ap.classList.add('c-ok');
+    setFb('🎉 答对了！(정답) 아주 잘했어요!','ok');
+    beep(true);
+    scoreOK++;streak++;
+    maxStreak=Math.max(maxStreak,streak);
+    updScore();
+    const dot=document.getElementById(`dot-${curIdx}`);
+    if(dot){dot.classList.remove('cur');dot.classList.add('done');}
+    document.getElementById('btnNext').classList.add('on');
+  }else{
+    ap.classList.add('c-no');
+    setFb('💦 再试一次！(다시 도전) 할 수 있어요!','no');
+    beep(false);
+    scoreFail++;streak=0;
+    updScore();
+    setTimeout(()=>{resetCards();rmFlash();},860);
+  }
+}
+
+/* ⑦ 초기화 */
+function resetCards(){
+  const s=SENTENCES[curIdx];
+  wPool=s.words.map((text,i)=>({text,origIdx:i}));
+  aPool=[];
+  if(wPool.length>1) shuffle(wPool);
+  setFb('','');rmFlash();render();
+}
+function rmFlash(){
+  document.getElementById('ansPool')
+    .classList.remove('c-ok','c-no');
+}
+
+/* ⑧ 다음 문장 & 완료 */
+function nextSentence(){
+  curIdx++;
+  if(curIdx>=SENTENCES.length) showDone();
+  else loadSentence(curIdx);
+}
+
+function showDone(){
+  document.getElementById('gameCard').style.display='none';
+  document.getElementById('doneCard').classList.add('on');
+
+  const total=scoreOK+scoreFail;
+  const pct  =total?Math.round(scoreOK/total*100):100;
+
+  let stars,emoji;
+  if(pct===100){stars='⭐⭐⭐';emoji='🏆';}
+  else if(pct>=70){stars='⭐⭐';emoji='🎉';}
+  else{stars='⭐';emoji='💪';}
+
+  document.getElementById('doneEmoji').textContent=emoji;
+  document.getElementById('doneStars').textContent=stars;
+
+  document.getElementById('doneStats').innerHTML=`
+    <div class="ds-box">
+      <div class="ds-num">${scoreOK}</div>
+      <div class="ds-lbl">✅ 정답</div>
+    </div>
+    <div class="ds-box">
+      <div class="ds-num">${scoreFail}</div>
+      <div class="ds-lbl">❌ 오답</div>
+    </div>
+    <div class="ds-box">
+      <div class="ds-num">${maxStreak}</div>
+      <div class="ds-lbl">🔥 최고연속</div>
+    </div>
+  `;
+
+  document.getElementById('doneSub').innerHTML=
+    `총 시도 <b>${total}회</b> 중 <b>${scoreOK}회</b> 정답<br>`+
+    `정답률 <b>${pct}%</b><br><br>`+
+    `<span class="done-highlight">加油！(jiā yóu!) 병원 표현, 계속 연습해 봐요 😊</span>`;
+
+  SENTENCES.forEach((_,i)=>{
+    const d=document.getElementById(`dot-${i}`);
+    if(d){d.classList.remove('cur');d.classList.add('done');}
+  });
+  document.getElementById('progLabel').textContent=
+    `문장 ${SENTENCES.length} / ${SENTENCES.length}`;
+  document.getElementById('progPct').textContent='100%';
+
+  fanfare();
+}
+
+/* ⑨ 재시작 */
+function restart(){
+  curIdx=0;scoreOK=0;scoreFail=0;streak=0;maxStreak=0;
+  updScore();
+  SENTENCES.forEach((_,i)=>{
+    const d=document.getElementById(`dot-${i}`);
+    if(d)d.classList.remove('done','cur');
+  });
+  document.getElementById('gameCard').style.display='';
+  document.getElementById('doneCard').classList.remove('on');
+  loadSentence(0);
+}
+
+/* ⑩ 진행 & 스코어 */
+function updateProg(idx){
+  const total=SENTENCES.length;
+  const pct=Math.round(idx/total*100);
+  document.getElementById('progLabel').textContent=
+    `문장 ${idx+1} / ${total}`;
+  document.getElementById('progPct').textContent=pct+'%';
+
+  SENTENCES.forEach((_,i)=>{
+    const d=document.getElementById(`dot-${i}`);
+    if(!d)return;
+    d.classList.remove('cur');
+    if(i===idx && !d.classList.contains('done'))
+      d.classList.add('cur');
+  });
+}
+function updScore(){
+  document.getElementById('scOK').textContent=scoreOK;
+  document.getElementById('scFail').textContent=scoreFail;
+  document.getElementById('scStreak').textContent=streak;
+}
+
+/* ⑪ 피드백 & 힌트 */
+function setFb(msg,type){
+  const el=document.getElementById('feedback');
+  el.textContent=msg;
+  el.className='feedback '+(type||'');
+}
+function toggleHint(){
+  const on=document.getElementById('hintChk').checked;
+  document.getElementById('hintBox').style.display=on?'block':'none';
+}
+
+/* ⑫ 효과음 */
+function getAC(){
+  return new(window.AudioContext||window.webkitAudioContext)();
+}
+function beep(ok){
+  try{
+    const ac=getAC();
+    const osc=ac.createOscillator();
+    const g=ac.createGain();
+    osc.connect(g);g.connect(ac.destination);
+    if(ok){
+      osc.type='sine';
+      osc.frequency.setValueAtTime(660,ac.currentTime);
+      osc.frequency.setValueAtTime(880,ac.currentTime+.13);
+      g.gain.setValueAtTime(.25,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.42);
+      osc.start(ac.currentTime);
+      osc.stop(ac.currentTime+.42);
+    }else{
+      osc.type='sawtooth';
+      osc.frequency.setValueAtTime(200,ac.currentTime);
+      g.gain.setValueAtTime(.15,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.3);
+      osc.start(ac.currentTime);
+      osc.stop(ac.currentTime+.3);
+    }
+  }catch(e){}
+}
+function fanfare(){
+  try{
+    const ac=getAC();
+    [[523,0],[659,.15],[784,.3],[1047,.48],[784,.66],[1047,.84]]
+      .forEach(([f,t])=>{
+        const osc=ac.createOscillator();
+        const g=ac.createGain();
+        osc.connect(g);g.connect(ac.destination);
+        osc.frequency.value=f;
+        g.gain.setValueAtTime(.2,ac.currentTime+t);
+        g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+t+.33);
+        osc.start(ac.currentTime+t);
+        osc.stop(ac.currentTime+t+.36);
+      });
+  }catch(e){}
+}
+</script>
+</body>
+</html>
