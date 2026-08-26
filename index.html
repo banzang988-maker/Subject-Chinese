@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🀄 중국어 회화 학습 게임 – 메인 메뉴</title>
+<style>
+/* ───────── 리셋 & 변수 ───────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  /* 1과 – 코랄 핑크 */
+  --c1-main:#e91e63;--c1-l:#f48fb1;--c1-ll:#fce4ec;--c1-m:#f8bbd0;--c1-d:#c2185b;
+  /* 2과 – 퍼플 */
+  --c2-main:#7b1fa2;--c2-l:#ce93d8;--c2-ll:#f3e5f5;--c2-m:#e1bee7;--c2-d:#6a1b9a;
+  /* 3과 – 블루 */
+  --c3-main:#1565c0;--c3-l:#90caf9;--c3-ll:#e3f2fd;--c3-m:#bbdefb;--c3-d:#0d47a1;
+  /* 4과 – 그린 */
+  --c4-main:#2e7d32;--c4-l:#a5d6a7;--c4-ll:#e8f5e9;--c4-m:#c8e6c9;--c4-d:#1b5e20;
+  --sh:0 8px 32px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.05);
+  --rd:20px;
+}
+
+/* ───────── 배경 & 바디 ───────── */
+body{
+  min-height:100vh;
+  background:linear-gradient(145deg,#fce4ec 0%,#f3e5f5 25%,#e8f5e9 55%,#e3f2fd 100%);
+  font-family:'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  display:flex;flex-direction:column;align-items:center;
+  padding:28px 16px 80px;
+}
+
+/* ───────── 헤더 ───────── */
+.hdr{text-align:center;margin-bottom:30px;}
+.hdr-icon{font-size:3rem;display:block;margin-bottom:6px;
+  animation:float 2.8s ease-in-out infinite;}
+@keyframes float{
+  0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}
+}
+.hdr h1{
+  font-size:1.65rem;font-weight:900;
+  background:linear-gradient(90deg,#e91e63,#7b1fa2,#1565c0,#2e7d32);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;letter-spacing:-.5px;line-height:1.3;
+}
+.hdr p{font-size:.82rem;color:#aaa;margin-top:7px;font-weight:600;}
+
+/* ───────── 범례 ───────── */
+.legend{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  margin-bottom:24px;width:100%;max-width:680px;
+}
+.legend-item{
+  display:flex;align-items:center;gap:5px;
+  background:#fff;border-radius:50px;padding:5px 13px;
+  font-size:.75rem;font-weight:700;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+.lg-dot{width:11px;height:11px;border-radius:50%;}
+
+/* ───────── 과 섹션 ───────── */
+.section{
+  width:100%;max-width:680px;
+  margin-bottom:24px;
+  background:#fff;
+  border-radius:var(--rd);
+  box-shadow:var(--sh);
+  overflow:hidden;
+}
+
+/* 섹션 헤더 */
+.sec-head{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 20px 14px;
+  border-bottom:1px solid #f5f5f5;
+}
+.sec-icon{font-size:1.4rem;}
+.sec-title{font-size:1.12rem;font-weight:900;letter-spacing:-.2px;}
+.sec-sub{font-size:.74rem;margin-top:2px;font-weight:600;opacity:.65;}
+
+/* 과별 색상 헤더 */
+.sec-head.c1{background:linear-gradient(135deg,var(--c1-ll),var(--c1-m));}
+.sec-head.c1 .sec-title{color:var(--c1-d);}
+.sec-head.c1 .sec-sub{color:var(--c1-main);}
+
+.sec-head.c2{background:linear-gradient(135deg,var(--c2-ll),var(--c2-m));}
+.sec-head.c2 .sec-title{color:var(--c2-d);}
+.sec-head.c2 .sec-sub{color:var(--c2-main);}
+
+.sec-head.c3{background:linear-gradient(135deg,var(--c3-ll),var(--c3-m));}
+.sec-head.c3 .sec-title{color:var(--c3-d);}
+.sec-head.c3 .sec-sub{color:var(--c3-main);}
+
+.sec-head.c4{background:linear-gradient(135deg,var(--c4-ll),var(--c4-m));}
+.sec-head.c4 .sec-title{color:var(--c4-d);}
+.sec-head.c4 .sec-sub{color:var(--c4-main);}
+
+/* 버튼 그리드 */
+.btn-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  padding:18px 18px 20px;
+}
+
+/* ───────── 개별 버튼 ───────── */
+.game-btn{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:5px;
+  border:none;border-radius:16px;
+  padding:16px 10px;
+  cursor:pointer;text-decoration:none;
+  font-family:inherit;
+  transition:transform .15s,box-shadow .15s;
+  position:relative;overflow:hidden;
+}
+.game-btn::before{
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,0);
+  transition:background .15s;
+}
+.game-btn:hover{
+  transform:translateY(-4px) scale(1.03);
+}
+.game-btn:hover::before{background:rgba(255,255,255,.18);}
+.game-btn:active{transform:scale(.97);}
+
+.game-btn .btn-tag{
+  font-size:.67rem;font-weight:800;
+  letter-spacing:.8px;text-transform:uppercase;
+  opacity:.75;
+}
+.game-btn .btn-title{
+  font-size:.96rem;font-weight:900;
+  line-height:1.3;text-align:center;
+}
+.game-btn .btn-sub{
+  font-size:.7rem;opacity:.7;font-weight:700;
+}
+.game-btn .btn-arrow{
+  font-size:.8rem;margin-top:3px;
+  opacity:.6;
+}
+
+/* 1과 버튼 색상 */
+.btn-c1-word{
+  background:linear-gradient(135deg,#ff8a80,var(--c1-main));
+  color:#fff;
+  box-shadow:0 5px 18px rgba(233,30,99,.32);
+}
+.btn-c1-talk{
+  background:linear-gradient(135deg,var(--c1-l),#f06292);
+  color:#fff;
+  box-shadow:0 5px 18px rgba(240,98,146,.3);
+}
+
+/* 2과 버튼 색상 */
+.btn-c2-word{
+  background:linear-gradient(135deg,#ba68c8,var(--c2-main));
+  color:#fff;
+  box-shadow:0 5px 18px rgba(123,31,162,.3);
+}
+.btn-c2-talk{
+  background:linear-gradient(135deg,var(--c2-l),#ab47bc);
+  color:#fff;
+  box-shadow:0 5px 18px rgba(171,71,188,.28);
+}
+
+/* 3과 버튼 색상 */
+.btn-c3-word{
+  background:linear-gradient(135deg,#64b5f6,var(--c3-main));
+  color:#fff;
+  box-shadow:0 5px 18px rgba(21,101,192,.3);
+}
+.btn-c3-talk{
+  background:linear-gradient(135deg,var(--c3-l),#1e88e5);
+  color:#fff;
+  box-shadow:0 5px 18px rgba(30,136,229,.28);
+}
+
+/* 4과 버튼 색상 */
+.btn-c4-word{
+  background:linear-gradient(135deg,#81c784,var(--c4-main));
+  color:#fff;
+  box-shadow:0 5px 18px rgba(46,125,50,.3);
+}
+.btn-c4-talk{
+  background:linear-gradient(135deg,var(--c4-l),#388e3c);
+  color:#fff;
+  box-shadow:0 5px 18px rgba(56,142,60,.28);
+}
+
+/* ───────── 구분 라인 ───────── */
+.divider{
+  display:flex;align-items:center;gap:8px;
+  padding:0 18px 4px;
+  font-size:.67rem;color:#ccc;font-weight:800;letter-spacing:1px;
+}
+.divider::before,.divider::after{
+  content:'';flex:1;height:1px;background:#f0f0f0;
+}
+
+/* ───────── 푸터 ───────── */
+.footer{
+  margin-top:10px;text-align:center;
+  font-size:.75rem;color:#ccc;font-weight:600;line-height:1.8;
+}
+
+/* ───────── 반응형 ───────── */
+@media(max-width:400px){
+  .hdr h1{font-size:1.35rem;}
+  .btn-grid{gap:9px;padding:14px 14px 16px;}
+  .game-btn{padding:13px 8px;}
+  .game-btn .btn-title{font-size:.87rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="hdr">
+  <span class="hdr-icon">🀄</span>
+  <h1>중국어 회화 학습 게임</h1>
+  <p>학습할 과와 영역을 선택하세요!</p>
+</div>
+
+<!-- 색상 범례 -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="lg-dot" style="background:#e91e63;"></div>
+    <span style="color:#c2185b;">1과</span>
+  </div>
+  <div class="legend-item">
+    <div class="lg-dot" style="background:#7b1fa2;"></div>
+    <span style="color:#6a1b9a;">2과</span>
+  </div>
+  <div class="legend-item">
+    <div class="lg-dot" style="background:#1565c0;"></div>
+    <span style="color:#0d47a1;">3과</span>
+  </div>
+  <div class="legend-item">
+    <div class="lg-dot" style="background:#2e7d32;"></div>
+    <span style="color:#1b5e20;">4과</span>
+  </div>
+  <div class="legend-item" style="background:#f5f5f5;">
+    <span style="color:#888;">📖 단어 게임</span>
+  </div>
+  <div class="legend-item" style="background:#f5f5f5;">
+    <span style="color:#888;">💬 회화 게임</span>
+  </div>
+</div>
+
+<!-- ══════════ 1과 ══════════ -->
+<div class="section">
+  <div class="sec-head c1">
+    <span class="sec-icon">🌸</span>
+    <div>
+      <div class="sec-title">1과</div>
+      <div class="sec-sub">단어 2세트 · 회화 2세트</div>
+    </div>
+  </div>
+
+  <div class="divider">단어 학습</div>
+  <div class="btn-grid" style="padding-bottom:10px;">
+    <a class="game-btn btn-c1-word" href="1과_단어-01.html">
+      <span class="btn-tag">📖 단어</span>
+      <span class="btn-title">1과 단어-01</span>
+      <span class="btn-sub">세트 1</span>
+      <span class="btn-arrow">→</span>
+    </a>
+    <a class="game-btn btn-c1-word" href="1과_단어-02.html">
+      <span class="btn-tag">📖 단어</span>
+      <span class="btn-title">1과 단어-02</span>
+      <span class="btn-sub">세트 2</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+
+  <div class="divider">회화 학습</div>
+  <div class="btn-grid" style="padding-top:10px;">
+    <a class="game-btn btn-c1-talk" href="1과_회화-01.html">
+      <span class="btn-tag">💬 회화</span>
+      <span class="btn-title">1과 회화-01</span>
+      <span class="btn-sub">세트 1</span>
+      <span class="btn-arrow">→</span>
+    </a>
+    <a class="game-btn btn-c1-talk" href="1과_회화-02.html">
+      <span class="btn-tag">💬 회화</span>
+      <span class="btn-title">1과 회화-02</span>
+      <span class="btn-sub">세트 2</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════ 2과 ══════════ -->
+<div class="section">
+  <div class="sec-head c2">
+    <span class="sec-icon">💜</span>
+    <div>
+      <div class="sec-title">2과</div>
+      <div class="sec-sub">단어 2세트 · 회화 2세트</div>
+    </div>
+  </div>
+
+  <div class="divider">단어 학습</div>
+  <div class="btn-grid" style="padding-bottom:10px;">
+    <a class="game-btn btn-c2-word" href="2과_단어-01.html">
+      <span class="btn-tag">📖 단어</span>
+      <span class="btn-title">2과 단어-01</span>
+      <span class="btn-sub">세트 1</span>
+      <span class="btn-arrow">→</span>
+    </a>
+    <a class="game-btn btn-c2-word" href="2과_단어-02.html">
+      <span class="btn-tag">📖 단어</span>
+      <span class="btn-title">2과 단어-02</span>
+      <span class="btn-sub">세트 2</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+
+  <div class="divider">회화 학습</div>
+  <div class="btn-grid" style="padding-top:10px;">
+    <a class="game-btn btn-c2-talk" href="2과_회화-01.html">
+      <span class="btn-tag">💬 회화</span>
+      <span class="btn-title">2과 회화-01</span>
+      <span class="btn-sub">세트 1</span>
+      <span class="btn-arrow">→</span>
+    </a>
+    <a class="game-btn btn-c2-talk" href="2과_회화-02.html">
+      <span class="btn-tag">💬 회화</span>
+      <span class="btn-title">2과 회화-02</span>
+      <span class="btn-sub">세트 2</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════ 3과 ══════════ -->
+<div class="section">
+  <div class="sec-head c3">
+    <span class="sec-icon">💙</span>
+    <div>
+      <div class="sec-title">3과</div>
+      <div class="sec-sub">단어 2세트 · 회화 2세트</div>
+    </div>
+  </div>
+
+  <div class="divider">단어 학습</div>
+  <div class="btn-grid" style="padding-bottom:10px;">
+    <a class="game-btn btn-c3-word" href="3과_단어-01.html">
+      <span class="btn-tag">📖 단어</span>
+      <span class="btn-title">3과 단어-01</span>
+      <span class="btn-sub">세트 1</span>
+      <span class="btn-arrow">→</span>
+    </a>
+    <a class="game-btn btn-c3-word" href="3과_단어-02.html">
+      <span class="btn-tag">📖 단어</span>
+      <span class="btn-title">3과 단어-02</span>
+      <span class="btn-sub">세트 2</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+
+  <div class="divider">회화 학습</div>
+  <div class="btn-grid" style="padding-top:10px;">
+    <a class="game-btn btn-c3-talk" href="3과_회화-01.html">
+      <span class="btn-tag">💬 회화</span>
+      <span class="btn-title">3과 회화-01</span>
+      <span class="btn-sub">세트 1</span>
+      <span class="btn-arrow">→</span>
+    </a>
+    <a class="game-btn btn-c3-talk" href="3과_회화-02.html">
+      <span class="btn-tag">💬 회화</span>
+      <span class="btn-title">3과 회화-02</span>
+      <span class="btn-sub">세트 2</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════ 4과 ══════════ -->
+<div class="section">
+  <div class="sec-head c4">
+    <span class="sec-icon">💚</span>
+    <div>
+      <div class="sec-title">4과</div>
+      <div class="sec-sub">단어 2세트 · 회화 2세트</div>
+    </div>
+  </div>
+
+  <div class="divider">단어 학습</div>
+  <div class="btn-grid" style="padding-bottom:10px;">
+    <a class="game-btn btn-c4-word" href="4과_단어-01.html">
+      <span class="btn-tag">📖 단어</span>
+      <span class="btn-title">4과 단어-01</span>
+      <span class="btn-sub">세트 1</span>
+      <span class="btn-arrow">→</span>
+    </a>
+    <a class="game-btn btn-c4-word" href="4과_단어-02.html">
+      <span class="btn-tag">📖 단어</span>
+      <span class="btn-title">4과 단어-02</span>
+      <span class="btn-sub">세트 2</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+
+  <div class="divider">회화 학습</div>
+  <div class="btn-grid" style="padding-top:10px;">
+    <a class="game-btn btn-c4-talk" href="4과_회화-01.html">
+      <span class="btn-tag">💬 회화</span>
+      <span class="btn-title">4과 회화-01</span>
+      <span class="btn-sub">세트 1</span>
+      <span class="btn-arrow">→</span>
+    </a>
+    <a class="game-btn btn-c4-talk" href="4과_회화-02.html">
+      <span class="btn-tag">💬 회화</span>
+      <span class="btn-title">4과 회화-02</span>
+      <span class="btn-sub">세트 2</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+</div>
+
+<!-- 푸터 -->
+<div class="footer">
+  🀄 중국어 회화 학습 게임 &nbsp;|&nbsp; 총 16개 게임<br>
+  단어 맞추기 · 어순 배열 스크램블
+</div>
+
+</body>
+</html>
